@@ -5,25 +5,22 @@ import { MarkersData, MapProps } from '../types';
 import uuid from 'react-native-uuid';
 import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context'; 
 
-export default function Map({ onGoToDetails }: MapProps) {
-  const [markers, setMarkers] = useState<MarkersData[]>([]);
-  
+export default function Map({ onGoToDetails, markers, setMarkers }: MapProps) {  
   const [modalVisible, setModalVisible] = useState(false); 
   const [tempCoordinates, setTempCoordinates] = useState<{ latitude: number; longitude: number } | null>(null);
   
   const [newTitle, setNewTitle] = useState('');
   const [newDescription, setNewDescription] = useState('');
 
-
   const handleAddMarker = () => {
     if (!tempCoordinates) {
-        Alert.alert("Ошибка", "Координаты не определены.");
+        Alert.alert("Координаты не определены.");
         return;
     }
-    if (newTitle.trim() === '') {
-        Alert.alert("Ошибка", "Пожалуйста, введите название маркера.");
-        return;
-    }
+    // if (newTitle.trim() === '') {
+    //     Alert.alert("Пожалуйста, введите название маркера.");
+    //     return;
+    // }
 
     const newId = uuid.v4(); 
     const newMarker: MarkersData = {
@@ -31,6 +28,7 @@ export default function Map({ onGoToDetails }: MapProps) {
       title: newTitle.trim(), 
       description: newDescription.trim(), 
       coordinate: tempCoordinates,
+      images: [], 
     };
 
     setMarkers(prevMarkers => [...prevMarkers, newMarker]); 
@@ -40,7 +38,6 @@ export default function Map({ onGoToDetails }: MapProps) {
     setNewTitle('');
     setNewDescription('');
     
-    console.log("Добавлен маркер:", newMarker);
   };
 
   const handleMapLongPress = (e: any) => {
@@ -54,7 +51,7 @@ export default function Map({ onGoToDetails }: MapProps) {
       setModalVisible(true);          
       
     } else {
-        Alert.alert("Ошибка", "Не удалось получить координаты для добавления маркера.");
+        Alert.alert("Не удалось получить координаты для добавления маркера.");
     }
   };
 
@@ -94,7 +91,6 @@ export default function Map({ onGoToDetails }: MapProps) {
     </Modal>
   );
 
-
   return (
     <SafeAreaProvider style={{flex: 1}}> 
       <SafeAreaView style={styles.container}> 
@@ -120,8 +116,8 @@ export default function Map({ onGoToDetails }: MapProps) {
                   coordinate={marker.coordinate}
                   title={marker.title}
                   description={marker.description}
-                  pinColor="red" 
-                  onPress={onGoToDetails}
+                  pinColor="#788cceff" 
+                  onPress={() => onGoToDetails(marker)} 
               >
               </Marker>
           ))}

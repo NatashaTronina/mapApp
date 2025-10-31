@@ -1,37 +1,33 @@
-import React, { useState } from 'react';
-import { View, StyleSheet, } from 'react-native';
-import Map from '../components/Map';
-import MarkerDetails from '../components/MarkerDetails'; 
+import { router } from "expo-router";
+import { Alert, StyleSheet, View } from 'react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
-import { MarkersData } from '../types'; 
+import Map from '../components/Map';
+import { useMarkers } from '../components/MarkerContext';
+import { MarkersData } from '../types';
 
 export default function Index() {
-  const [currentView, setCurrentView] = useState<'map' | 'details'>('map');
-  const [markers, setMarkers] = useState<MarkersData[]>([]);
+  const { markers, setMarkers } = useMarkers();
 
-  const handleGoToDetails = () => {
-    setCurrentView('details');
-  };
-
-  const handleGoBackToMap = () => {
-    setCurrentView('map');
+  const handleGoToDetails = (marker: MarkersData) => {
+    try {
+      router.push({
+        pathname: '/marker/[id]',
+        params: { id: marker.id }
+      });
+    } catch (error) {
+      Alert.alert('Не удалось перейти к деталям маркера. Попробуйте снова.');
+    }
   };
 
   return (
     <SafeAreaProvider style={{ flex: 1 }}>
-      {currentView === 'map' ? (
-        <View style={styles.container}>
-          <Map 
-            onGoToDetails={handleGoToDetails} 
-            markers={markers}
-            setMarkers={setMarkers}
-          />
-        </View>
-      ) : (
-        <View style={styles.container}>
-          <MarkerDetails onBack={handleGoBackToMap} /> 
-        </View>
-      )}
+      <View style={styles.container}>
+        <Map 
+          onGoToDetails={handleGoToDetails} 
+          markers={markers}
+          setMarkers={setMarkers}
+        />
+      </View>
     </SafeAreaProvider>
   );
 }

@@ -4,8 +4,9 @@ export interface MarkersData {
     description: string;
     coordinate: { 
         latitude: number; 
-        longitude: number };
-    // images: ImageData[];
+        longitude: number 
+    };
+    images: ImageData[]; 
 }
 
 export interface ImageData {
@@ -14,7 +15,8 @@ export interface ImageData {
 }
 
 export interface MapProps {
-  onGoToDetails: () => void;
-  markers: MarkersData[]; 
-  setMarkers: (markers: MarkersData[]) => void;
+    onGoToDetails: (marker: MarkersData) => void;
+    markers: MarkersData[]; 
+    setMarkers: React.Dispatch<React.SetStateAction<MarkersData[]>>; 
 }
+   
