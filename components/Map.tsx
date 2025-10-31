@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import MapView, { PROVIDER_GOOGLE, Marker, Callout } from 'react-native-maps';
+import MapView, { PROVIDER_GOOGLE, Marker } from 'react-native-maps';
 import { StyleSheet, View, Alert, Text, TextInput, TouchableOpacity, Modal } from 'react-native';
 import { MarkersData, MapProps } from '../types';
 import uuid from 'react-native-uuid';
@@ -11,6 +11,22 @@ export default function Map({ onGoToDetails, markers, setMarkers }: MapProps) {
   
   const [newTitle, setNewTitle] = useState('');
   const [newDescription, setNewDescription] = useState('');
+
+
+  const handleMapLongPress = (e: any) => {
+    if (e.nativeEvent && e.nativeEvent.coordinate) {
+      const coordinate = {
+        latitude: e.nativeEvent.coordinate.latitude,
+        longitude: e.nativeEvent.coordinate.longitude
+      };
+      
+      setTempCoordinates(coordinate); 
+      setModalVisible(true);          
+      
+    } else {
+        Alert.alert("Не удалось получить координаты для добавления маркера.");
+    }
+  };
 
   const handleAddMarker = () => {
     if (!tempCoordinates) {
@@ -38,21 +54,6 @@ export default function Map({ onGoToDetails, markers, setMarkers }: MapProps) {
     setNewTitle('');
     setNewDescription('');
     
-  };
-
-  const handleMapLongPress = (e: any) => {
-    if (e.nativeEvent && e.nativeEvent.coordinate) {
-      const coordinate = {
-        latitude: e.nativeEvent.coordinate.latitude,
-        longitude: e.nativeEvent.coordinate.longitude
-      };
-      
-      setTempCoordinates(coordinate); 
-      setModalVisible(true);          
-      
-    } else {
-        Alert.alert("Не удалось получить координаты для добавления маркера.");
-    }
   };
 
   const ModalContent = (
@@ -100,8 +101,8 @@ export default function Map({ onGoToDetails, markers, setMarkers }: MapProps) {
         <MapView
           style={styles.map}
           provider={PROVIDER_GOOGLE}
-          showsUserLocation
-          showsMyLocationButton
+          showsUserLocation={true}
+          showsMyLocationButton={true}
           initialRegion={{
               latitude: 58.007438,
               longitude: 56.224394,
