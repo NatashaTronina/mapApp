@@ -32,11 +32,8 @@ export default function MarkerDetailsScreen() {
         quality: 1,
       });
 
-      if (!result.canceled && result.assets && result.assets.length > 0) {
+      if (!result.canceled) {
         const newImageId = uuid.v4();
-        if (!newImageId) {
-          throw new Error('Не удалось сгенерировать ID для изображения');
-        }
         const newImage: ImageData = {
           id: newImageId,
           uri: result.assets[0].uri,
