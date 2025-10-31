@@ -1,50 +1,31 @@
-# Welcome to your Expo app 👋
-
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
-
-## Get started
-
-1. Install dependencies
-
-   ```bash
-   npm install
-   ```
-
-2. Start the app
-
-   ```bash
-   npx expo start
-   ```
-
-In the output, you'll find options to open the app in a
-
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
-
-You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
-
-## Get a fresh project
-
-When you're ready, run:
-
-```bash
-npm run reset-project
-```
-
-This command will move the starter code to the **app-example** directory and create a blank **app** directory where you can start developing.
-
-## Learn more
-
-To learn more about developing your project with Expo, look at the following resources:
-
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
-
-## Join the community
-
-Join our community of developers creating universal apps.
-
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
+# Установка 
+1) `npx create-expo-app@latest`
+2) `npx expo install react-native-maps`
+3) `npm i expo-router`
+4) `npx expo install expo-image-picker`
+5) `npm i react-native-uuid`
+# Принятые решения
+## Для карты:
+- Для MapView был выбран PROVIDER_GOOGLE(просто так захотелось);
+- Пропсы showsUserLocation и showsMyLocationButton для лучшего пользовательского интерфейса(UI);
+- Цвет маркера с классического поменяла на лиловый;
+- Начальный центр карты поставлен на Эспланаду;
+## Для маркера:
+- Цвет маркера с классического поменяла на лиловый;
+- Модальное окно для ввода Названия и Описания места;
+- Для генерации уникального ID маркера выбрана библиотека "react-native-uui";
+- Вместо пропсов для управления состоянием маркера используется React Context;
+## Для навигации:
+- Используется библиотека "expo-router" для упращения навигации между экранами;
+## Для деталей маркера:
+- Для добавления фотографий через галерею смартфона "expo-image-picker";
+- Сделан собственный стиль для этого экрана;
+- Обернуты в компонент ScrollView для того случая, если экрана смартфона будет не хватать;
+## Для компонентов: 
+- Все компоненты типизированы в одном файле для предотварщения возникновения ошибок;
+## Для другого:
+- Все кнопки оборнуты в компонент "TouchableOpacity" для того, чтобы можно было задать свой стиль, вместо системного
+# Известными проблемами или ограничениями
+1) Маркеры, детали маркеров хранятся только до первого перезапуска приложения;
+2) Протестировано только на Айфоне;
+3) Адаптировано только на русский язык;
