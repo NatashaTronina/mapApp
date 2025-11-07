@@ -1,12 +1,13 @@
 import React, { createContext, useContext, useState } from 'react';
 import { MarkersData } from '../types';
 
+
 const MarkersContext = createContext<{
   markers: MarkersData[];
   setMarkers: React.Dispatch<React.SetStateAction<MarkersData[]>>;
 } | undefined>(undefined);
 
-export const MarkersProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+export const MarkersProvider: React.FunctionComponent<{ children: React.ReactNode }> = ({ children }) => {
   const [markers, setMarkers] = useState<MarkersData[]>([]);
 
   return (
@@ -16,10 +17,11 @@ export const MarkersProvider: React.FC<{ children: React.ReactNode }> = ({ child
   );
 };
 
-export const useMarkers = () => {
+export const useMarkersContext = () => {
   const context = useContext(MarkersContext);
-  if (!context) {
-    throw new Error('useMarkers необходимо использовать внутри MarkersProvider');
+  if (context === undefined) {
+    throw new Error('useMarkers must be used with a MarkersProvider');
   }
   return context;
 };
+

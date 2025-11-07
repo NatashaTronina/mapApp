@@ -20,7 +20,6 @@ export interface MapProps {
     setMarkers: React.Dispatch<React.SetStateAction<MarkersData[]>>; 
 }
    
-
 export interface MarkerModalProps {
     visible: boolean;  
     onClose: () => void;  

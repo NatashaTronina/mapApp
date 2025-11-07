@@ -1,6 +1,6 @@
 import React from 'react';
 import { View, Text, TextInput, StyleSheet } from 'react-native';
-import { MarkersData, MarkerListProps } from '../types';
+import { MarkerListProps } from '../types';
 
 export default function MarkerList({ marker, title, setTitle, description, setDescription }: MarkerListProps) {
   return (

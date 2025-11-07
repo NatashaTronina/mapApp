@@ -53,7 +53,7 @@ export default function Map({ onGoToDetails, markers, setMarkers }: MapProps) {
       images: [], 
     };
 
-    setMarkers(prevMarkers => [...prevMarkers, newMarker]); 
+    setMarkers(previous => [...previous, newMarker]); 
 
     setModalVisible(false);
     setTempCoordinates(null);

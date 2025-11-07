@@ -1,14 +1,14 @@
 import { router, useLocalSearchParams } from 'expo-router';
 import React, { useEffect, useState } from 'react';
-import { Alert, ScrollView, Text, TouchableOpacity, View, StyleSheet } from 'react-native';
-import { useMarkers } from '../../Context/MarkerContext';  
+import { Alert, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import ImageList from '../../components/ImageList';
+import MarkerList from '../../components/MarkerList';
+import { useMarkersContext } from '../../Context/MarkersContext';
 import { MarkersData } from '../../types';
-import MarkerList from '../../components/MarkerList';  
-import ImageList from '../../components/ImageList';  
 
-export default function MarkerDetailsScreen() {
+export default function MarkerDetails() {
   const { id } = useLocalSearchParams();
-  const { markers, setMarkers } = useMarkers();
+  const { markers, setMarkers } = useMarkersContext();
   const marker = markers.find(marker => marker.id === id as string);
 
   const [title, setTitle] = useState(marker?.title || '');

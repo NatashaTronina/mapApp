@@ -21,7 +21,7 @@ export default function ImageList({ images, setImages }: ImageListProps) {
           id: newImageId,
           uri: result.assets[0].uri,
         };
-        setImages(prev => [...prev, newImage]);
+        setImages(previous => [...previous, newImage]);
       }
     } catch (error) {
       Alert.alert('Не удалось выбрать изображение. Попробуйте снова.');
@@ -29,7 +29,7 @@ export default function ImageList({ images, setImages }: ImageListProps) {
   };
 
   const removeImage = (imageId: string) => {
-    setImages(prev => prev.filter(img => img.id !== imageId));
+    setImages(previous => previous.filter(img => img.id !== imageId));
   };
 
   return (
