@@ -16,7 +16,6 @@ export default function MarkerModal({visible, onClose, onAddMarker, newTitle, se
           <TouchableOpacity onPress={onClose} style={styles.closeButton}>
             <Text style={styles.closeButtonText}>✘</Text>
           </TouchableOpacity>
-
           <TextInput
             placeholder="Название"
             value={newTitle}

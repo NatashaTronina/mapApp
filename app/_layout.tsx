@@ -1,6 +1,6 @@
 import { Stack } from "expo-router";
-import { MarkersProvider } from "../components/MarkerContext";
 import { Alert } from 'react-native';
+import { MarkersProvider } from "../Context/MarkerContext";
 
 export default function RootLayout() {
   try {

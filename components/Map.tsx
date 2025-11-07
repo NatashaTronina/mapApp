@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import MapView, { PROVIDER_GOOGLE, Marker } from 'react-native-maps';
+import React, { useState, useEffect} from 'react';
+import MapView, { Marker } from 'react-native-maps';
 import { StyleSheet, Alert } from 'react-native'; 
 import { MarkersData, MapProps } from '../types';
 import uuid from 'react-native-uuid';
@@ -13,6 +13,13 @@ export default function Map({ onGoToDetails, markers, setMarkers }: MapProps) {
   const [newTitle, setNewTitle] = useState('');
   const [newDescription, setNewDescription] = useState('');
 
+  const [calloutVisible, setCalloutVisible] = useState<{[key: string]: boolean}>({});
+
+  useEffect(() => {
+    setCalloutVisible({}); 
+  }, [markers]); 
+
+
   const handleMapLongPress = (e: any) => {
     if (e.nativeEvent && e.nativeEvent.coordinate) {
       const coordinate = {
@@ -24,23 +31,22 @@ export default function Map({ onGoToDetails, markers, setMarkers }: MapProps) {
       setModalVisible(true);          
       
     } else {
-      Alert.alert("Не удалось получить координаты для добавления маркера.");
+      Alert.alert("Не удалось получить координаты для добавления маркера");
     }
   };
 
   const handleAddMarker = () => {
     if (!tempCoordinates) {
-      Alert.alert("Координаты не определены.");
+      Alert.alert("Координаты не определены");
       return;
     }
-    // if (newTitle.trim() === '') {
-    //     Alert.alert("Пожалуйста, введите название маркера.");
-    //     return;
-    // }
+    if (newTitle.trim() === '') {
+        Alert.alert("Введите название маркера!");
+        return;
+    }
 
-    const newId = uuid.v4(); 
     const newMarker: MarkersData = {
-      id: newId,
+      id: uuid.v4(),
       title: newTitle.trim(), 
       description: newDescription.trim(), 
       coordinate: tempCoordinates,
@@ -71,7 +77,7 @@ export default function Map({ onGoToDetails, markers, setMarkers }: MapProps) {
 
         <MapView
           style={styles.map}
-          provider={PROVIDER_GOOGLE}
+          // provider={PROVIDER_GOOGLE}
           showsUserLocation={true}
           showsMyLocationButton={true}
           initialRegion={{
@@ -84,7 +90,7 @@ export default function Map({ onGoToDetails, markers, setMarkers }: MapProps) {
         >
           {markers.map((marker) => (
             <Marker
-              key={marker.id}
+              key={marker.id} 
               coordinate={marker.coordinate}
               title={marker.title}
               description={marker.description}

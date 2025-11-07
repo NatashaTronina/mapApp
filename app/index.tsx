@@ -2,7 +2,7 @@ import { router } from "expo-router";
 import { Alert, StyleSheet, View } from 'react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import Map from '../components/Map';
-import { useMarkers } from '../components/MarkerContext';
+import { useMarkers } from '../Context/MarkerContext';
 import { MarkersData } from '../types';
 
 export default function Index() {

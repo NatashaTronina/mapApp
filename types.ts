@@ -30,3 +30,16 @@ export interface MarkerModalProps {
     newDescription: string;  
     setNewDescription: (value: string) => void;  
 }
+
+export interface ImageListProps {
+  images: ImageData[];
+  setImages: React.Dispatch<React.SetStateAction<ImageData[]>>;
+}
+
+export interface MarkerListProps {
+  marker: MarkersData;
+  title: string;
+  setTitle: (title: string) => void;
+  description: string;
+  setDescription: (description: string) => void;
+}
