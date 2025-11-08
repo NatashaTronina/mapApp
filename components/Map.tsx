@@ -1,5 +1,5 @@
 import React, { useState, useEffect} from 'react';
-import MapView, { Marker } from 'react-native-maps';
+import MapView, { Marker, PROVIDER_GOOGLE } from 'react-native-maps';
 import { StyleSheet, Alert } from 'react-native'; 
 import { MarkersData, MapProps } from '../types';
 import uuid from 'react-native-uuid';
@@ -12,13 +12,6 @@ export default function Map({ onGoToDetails, markers, setMarkers }: MapProps) {
   
   const [newTitle, setNewTitle] = useState('');
   const [newDescription, setNewDescription] = useState('');
-
-  const [calloutVisible, setCalloutVisible] = useState<{[key: string]: boolean}>({});
-
-  useEffect(() => {
-    setCalloutVisible({}); 
-  }, [markers]); 
-
 
   const handleMapLongPress = (e: any) => {
     if (e.nativeEvent && e.nativeEvent.coordinate) {
@@ -77,7 +70,7 @@ export default function Map({ onGoToDetails, markers, setMarkers }: MapProps) {
 
         <MapView
           style={styles.map}
-          // provider={PROVIDER_GOOGLE}
+          provider={PROVIDER_GOOGLE}
           showsUserLocation={true}
           showsMyLocationButton={true}
           initialRegion={{
