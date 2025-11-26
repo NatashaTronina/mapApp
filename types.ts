@@ -42,3 +42,17 @@ export interface MarkerListProps {
   description: string;
   setDescription: (description: string) => void;
 }
+
+interface DatabaseContextType {
+  // Операции с базой данных
+  addMarker: (latitude: number, longitude: number) => Promise<number>;
+  deleteMarker: (id: number) => Promise<void>;
+  getMarkers: () => Promise<Marker[]>;
+  addImage: (markerId: number, uri: string) => Promise<void>;
+  deleteImage: (id: number) => Promise<void>;
+  getMarkerImages: (markerId: number) => Promise<MarkerImage[]>;
+
+  // Статусы
+  isLoading: boolean;
+  error: Error | null;
+}
