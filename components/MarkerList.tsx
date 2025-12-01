@@ -1,8 +1,36 @@
-import React from 'react';
-import { View, Text, TextInput, StyleSheet } from 'react-native';
-import { MarkerListProps } from '../types';
+import React, { useState, useEffect } from 'react';
+import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert, ActivityIndicator } from 'react-native';
+import { MarkersData } from '../types';
+import { useDatabase } from '../Context/DatabaseContext';
 
-export default function MarkerList({ marker, title, setTitle, description, setDescription }: MarkerListProps) {
+interface MarkerListProps {
+  marker: MarkersData;
+}
+
+export default function MarkerList({ marker }: MarkerListProps) {
+  const { updateMarker, isLoading, error } = useDatabase();
+  const [title, setTitle] = useState(marker.title);
+  const [description, setDescription] = useState(marker.description);
+
+  useEffect(() => {
+    if (error) {
+      Alert.alert('Ошибка', error.message);
+    }
+  }, [error]);
+
+  const handleSave = async () => {
+    try {
+      await updateMarker(marker.id, title, description);
+      Alert.alert('Сохранено');
+    } catch (err) {
+      Alert.alert('Ошибка сохранения');
+    }
+  };
+
+  if (isLoading) {
+    return <ActivityIndicator size="large" />;
+  }
+
   return (
     <View>
       <Text style={styles.placeholderText}>Название:</Text>
@@ -20,12 +48,15 @@ export default function MarkerList({ marker, title, setTitle, description, setDe
         style={styles.input}
         multiline
       />
+      <TouchableOpacity onPress={handleSave} style={styles.saveButton}>
+        <Text style={styles.saveText}>Сохранить</Text>
+      </TouchableOpacity>
       <View style={styles.coordinatesContainer}>
         <Text style={styles.coordinatesText}>
-          Широта: {marker.coordinate.latitude.toFixed(6)}
+          Широта: {marker.latitude.toFixed(6)}
         </Text>
         <Text style={styles.coordinatesText}>
-          Долгота: {marker.coordinate.longitude.toFixed(6)}
+          Долгота: {marker.longitude.toFixed(6)}
         </Text>
       </View>
     </View>
@@ -40,6 +71,17 @@ const styles = StyleSheet.create({
     marginBottom: 15,
     borderRadius: 5,
     backgroundColor: '#fff',
+  },
+  saveButton: {
+    backgroundColor: '#788cceff',
+    padding: 10,
+    borderRadius: 5,
+    alignItems: 'center',
+    marginBottom: 15,
+  },
+  saveText: {
+    color: '#fff',
+    fontSize: 16,
   },
   coordinatesContainer: {
     flexDirection: 'row',

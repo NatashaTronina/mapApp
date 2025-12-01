@@ -1,48 +1,64 @@
 import { router, useLocalSearchParams } from 'expo-router';
 import React, { useEffect, useState } from 'react';
-import { Alert, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { ScrollView, StyleSheet, Text, TouchableOpacity, View, Alert } from 'react-native';
 import ImageList from '../../components/ImageList';
 import MarkerList from '../../components/MarkerList';
-import { useMarkersContext } from '../../Context/MarkersContext';
+import { useDatabase } from '../../Context/DatabaseContext';
 import { MarkersData } from '../../types';
 
 export default function MarkerDetails() {
   const { id } = useLocalSearchParams();
-  const { markers, setMarkers } = useMarkersContext();
-  const marker = markers.find(marker => marker.id === id as string);
+  if (!id || Array.isArray(id)) {
+    return <View><Text>Неверный ID маркера</Text></View>;
+  }
 
-  const [title, setTitle] = useState(marker?.title || '');
-  const [description, setDescription] = useState(marker?.description || '');
-  const [images, setImages] = useState(marker?.images || []);
+  const { getMarkers, deleteMarker } = useDatabase();
+  const [marker, setMarker] = useState<MarkersData | null>(null);
 
   useEffect(() => {
-    if (marker) {
-      setTitle(marker.title);
-      setDescription(marker.description);
-      setImages(marker.images);
-    }
-  }, [marker]);
+    const loadMarker = async () => {
+      try {
+        const markers = await getMarkers();
+        const foundMarker = markers.find(m => m.id === id as string);
+        if (foundMarker) {
+          setMarker({
+            id: foundMarker.id,
+            title: foundMarker.title || '',
+            description: foundMarker.description || '',
+            latitude: foundMarker.latitude,
+            longitude: foundMarker.longitude,
+            images: [], 
+          });
+        }
+      } catch (err) {
+        Alert.alert('Ошибка загрузки маркера');
+      }
+    };
+    loadMarker();
+  }, [id, getMarkers]);
 
-  const saveChanges = () => {
-    if (!marker) {
-      Alert.alert('Маркер не найден. Невозможно сохранить изменения.');
-      return;
-    }
-
-    try {
-      const updatedMarker: MarkersData = {
-        ...marker,
-        title,
-        description,
-        images,
-      };
-
-      setMarkers(previous => previous.map(marker => marker.id === id ? updatedMarker : marker));
-      Alert.alert('Изменения сохранены!');
-      router.back()
-    } catch (error) {
-      Alert.alert('Не получилось. Попробуйте снова.');
-    }
+  const handleDelete = async () => {
+    if (!marker) return;
+    Alert.alert(
+      'Удалить маркер?',
+      'Это действие нельзя отменить.',
+      [
+        { text: 'Отмена', style: 'cancel' },
+        {
+          text: 'Удалить',
+          style: 'destructive',
+          onPress: async () => {
+            try {
+              await deleteMarker(marker.id);
+              Alert.alert('Маркер удален');
+              router.back();  // Возврат на карту
+            } catch (err) {
+              Alert.alert('Ошибка удаления');
+            }
+          },
+        },
+      ]
+    );
   };
 
   if (!marker) {
@@ -57,36 +73,39 @@ export default function MarkerDetails() {
   }
 
   return (
-    <ScrollView style={styles.container}>
-      <MarkerList
-        marker={marker}
-        title={title}
-        setTitle={setTitle}
-        description={description}
-        setDescription={setDescription}
-      />
-      <ImageList images={images} setImages={setImages} />
-      <TouchableOpacity onPress={saveChanges} style={styles.saveButton}>
-        <Text style={styles.buttonText}>Сохранить</Text>
+    <View style={styles.container}>
+      <ScrollView style={styles.scrollContainer}>
+        <MarkerList marker={marker} />
+        <ImageList markerId={marker.id} />
+      </ScrollView>
+      <TouchableOpacity onPress={handleDelete} style={styles.deleteButton}>
+        <Text style={styles.deleteText}>Удалить маркер</Text>
       </TouchableOpacity>
-    </ScrollView>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+  },
+  scrollContainer: {
+    flex: 1,
     padding: 20,
+  },
+  deleteButton: {
+    backgroundColor: '#f87f76ff',
+    padding: 15,
+    alignItems: 'center',
+    margin: 20,
+    borderRadius: 5,
+  },
+  deleteText: {
+    color: '#fff',
+    fontSize: 16,
   },
   button: {
     backgroundColor: '#788cceff',
-    padding: 10,
-    borderRadius: 5,
-    alignItems: 'center',
-    marginBottom: 15,
-  },
-  saveButton: {
-    backgroundColor: '#e9b0e1ff',
     padding: 10,
     borderRadius: 5,
     alignItems: 'center',

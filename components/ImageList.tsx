@@ -1,11 +1,35 @@
-import React from 'react';
-import { View, Text, TouchableOpacity, Image, StyleSheet, Alert } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { View, Text, TouchableOpacity, Image, StyleSheet, Alert, ActivityIndicator } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
-import uuid from 'react-native-uuid';
-import { ImageData, ImageListProps } from '../types';
+import { ImageData } from '../types';
+import { useDatabase } from "../Context/DatabaseContext";
 
+export default function ImageList({ markerId }: { markerId: string }) {
+  const { addImage, deleteImage, getMarkerImages, isLoading, error } = useDatabase();
+  const [images, setImages] = useState<ImageData[]>([]);
 
-export default function ImageList({ images, setImages }: ImageListProps) {
+  useEffect(() => {
+    const loadImages = async () => {
+      try {
+        const dbImages = await getMarkerImages(markerId);
+        const adaptedImages: ImageData[] = dbImages.map(img => ({
+          id: img.id,
+          uri: img.uri,
+        }));
+        setImages(adaptedImages);
+      } catch (err) {
+        Alert.alert('Ошибка загрузки изображений');
+      }
+    };
+    loadImages();
+  }, [markerId, getMarkerImages]);
+
+  useEffect(() => {
+    if (error) {
+      Alert.alert('Ошибка', error.message);
+    }
+  }, [error]);
+
   const pickImage = async () => {
     try {
       let result = await ImagePicker.launchImageLibraryAsync({
@@ -16,21 +40,27 @@ export default function ImageList({ images, setImages }: ImageListProps) {
       });
 
       if (!result.canceled) {
-        const newImageId = uuid.v4();
-        const newImage: ImageData = {
-          id: newImageId,
-          uri: result.assets[0].uri,
-        };
-        setImages(previous => [...previous, newImage]);
+        const uri = result.assets[0].uri;
+        const id = await addImage(markerId, uri);
+        setImages(previous => [...previous, { id, uri }]);
       }
-    } catch (error) {
+    } catch (err) {
       Alert.alert('Не удалось выбрать изображение. Попробуйте снова.');
     }
   };
 
-  const removeImage = (imageId: string) => {
-    setImages(previous => previous.filter(img => img.id !== imageId));
+  const removeImage = async (imageId: string) => {
+    try {
+      await deleteImage(imageId);
+      setImages(previous => previous.filter(img => img.id !== imageId));
+    } catch (err) {
+      Alert.alert('Ошибка удаления изображения');
+    }
   };
+
+  if (isLoading) {
+    return <ActivityIndicator size="large" />;
+  }
 
   return (
     <View>

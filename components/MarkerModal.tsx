@@ -1,19 +1,38 @@
-import React from 'react';
+import React, { useCallback, useState } from 'react';
 import { View, Text, TextInput, TouchableOpacity, Modal, StyleSheet } from 'react-native';
-import { MarkerModalProps } from '../types';
 
+interface MarkerModalProps {
+  visible: boolean;
+  onClose: () => void;
+  onAddMarker: (title: string, description: string) => void;
+}
 
-export default function MarkerModal({visible, onClose, onAddMarker, newTitle, setNewTitle, newDescription, setNewDescription,}: MarkerModalProps) {
+export default function MarkerModal({ visible, onClose, onAddMarker }: MarkerModalProps) {
+  const [newTitle, setNewTitle] = useState('');
+  const [newDescription, setNewDescription] = useState('');
+
+  const handleAddMarker = useCallback(() => {
+    onAddMarker(newTitle, newDescription);
+    setNewTitle('');
+    setNewDescription('');
+  }, [newTitle, newDescription, onAddMarker]);
+
+  const handleClose = useCallback(() => {
+    onClose();
+    setNewTitle('');
+    setNewDescription('');
+  }, [onClose]);
+
   return (
     <Modal
       animationType="fade"
       transparent={true}
       visible={visible}
-      onRequestClose={onClose}
+      onRequestClose={handleClose}
     >
       <View style={styles.modalOverlay}>
         <View style={styles.modalView}>
-          <TouchableOpacity onPress={onClose} style={styles.closeButton}>
+          <TouchableOpacity onPress={handleClose} style={styles.closeButton}>
             <Text style={styles.closeButtonText}>✘</Text>
           </TouchableOpacity>
           <TextInput
@@ -29,7 +48,7 @@ export default function MarkerModal({visible, onClose, onAddMarker, newTitle, se
             style={styles.input}
           />
 
-          <TouchableOpacity onPress={onAddMarker} style={styles.addButtonContainer}>
+          <TouchableOpacity onPress={handleAddMarker} style={styles.addButtonContainer}>
             <Text style={styles.textButton}>Добавить маркер</Text>
           </TouchableOpacity>
         </View>
