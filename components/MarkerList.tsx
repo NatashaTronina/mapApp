@@ -1,16 +1,18 @@
-import React, { useState, useEffect } from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert, ActivityIndicator } from 'react-native';
+import React, { useEffect } from 'react';
+import { View, Text, TextInput, StyleSheet, Alert, ActivityIndicator } from 'react-native';
 import { MarkersData } from '../types';
-import { useDatabase } from '../Context/DatabaseContext';
+import { useDatabaseContext } from '../Context/DatabaseContext';
 
 interface MarkerListProps {
   marker: MarkersData;
+  title: string; 
+  setTitle: (value: string) => void;  
+  description: string;  
+  setDescription: (value: string) => void;  
 }
 
-export default function MarkerList({ marker }: MarkerListProps) {
-  const { updateMarker, isLoading, error } = useDatabase();
-  const [title, setTitle] = useState(marker.title);
-  const [description, setDescription] = useState(marker.description);
+export default function MarkerList({ marker, title, setTitle, description, setDescription }: MarkerListProps) {
+  const { isLoading, error } = useDatabaseContext();
 
   useEffect(() => {
     if (error) {
@@ -18,17 +20,8 @@ export default function MarkerList({ marker }: MarkerListProps) {
     }
   }, [error]);
 
-  const handleSave = async () => {
-    try {
-      await updateMarker(marker.id, title, description);
-      Alert.alert('Сохранено');
-    } catch (err) {
-      Alert.alert('Ошибка сохранения');
-    }
-  };
-
   if (isLoading) {
-    return <ActivityIndicator size="large" />;
+    return <ActivityIndicator size="large" color="#788cceff"/>;
   }
 
   return (
@@ -48,9 +41,6 @@ export default function MarkerList({ marker }: MarkerListProps) {
         style={styles.input}
         multiline
       />
-      <TouchableOpacity onPress={handleSave} style={styles.saveButton}>
-        <Text style={styles.saveText}>Сохранить</Text>
-      </TouchableOpacity>
       <View style={styles.coordinatesContainer}>
         <Text style={styles.coordinatesText}>
           Широта: {marker.latitude.toFixed(6)}
@@ -63,6 +53,7 @@ export default function MarkerList({ marker }: MarkerListProps) {
   );
 }
 
+
 const styles = StyleSheet.create({
   input: {
     borderWidth: 1,
@@ -71,17 +62,6 @@ const styles = StyleSheet.create({
     marginBottom: 15,
     borderRadius: 5,
     backgroundColor: '#fff',
-  },
-  saveButton: {
-    backgroundColor: '#788cceff',
-    padding: 10,
-    borderRadius: 5,
-    alignItems: 'center',
-    marginBottom: 15,
-  },
-  saveText: {
-    color: '#fff',
-    fontSize: 16,
   },
   coordinatesContainer: {
     flexDirection: 'row',
@@ -100,5 +80,16 @@ const styles = StyleSheet.create({
   placeholderText: {
     fontSize: 14,
     fontWeight: 'bold',
+  },
+    deleteButton: {
+    backgroundColor: '#f87f76ff',
+    padding: 15,
+    alignItems: 'center',
+    margin: 20,
+    borderRadius: 5,
+  },
+  deleteText: {
+    color: '#fff',
+    fontSize: 16,
   },
 });

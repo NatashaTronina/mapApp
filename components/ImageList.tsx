@@ -2,10 +2,10 @@ import React, { useState, useEffect } from 'react';
 import { View, Text, TouchableOpacity, Image, StyleSheet, Alert, ActivityIndicator } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
 import { ImageData } from '../types';
-import { useDatabase } from "../Context/DatabaseContext";
+import { useDatabaseContext } from "../Context/DatabaseContext";
 
 export default function ImageList({ markerId }: { markerId: string }) {
-  const { addImage, deleteImage, getMarkerImages, isLoading, error } = useDatabase();
+  const { addImage, deleteImage, getMarkerImages, isLoading, error } = useDatabaseContext();
   const [images, setImages] = useState<ImageData[]>([]);
 
   useEffect(() => {

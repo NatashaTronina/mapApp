@@ -5,12 +5,38 @@ import Map from '../components/Map';
 import MarkerModal from '../components/MarkerModal';
 import { MarkersData } from '../types';
 import { useState, useCallback } from 'react';
-import { useDatabase } from '../Context/DatabaseContext';
+import { useDatabaseContext } from '../Context/DatabaseContext';
+import { useFocusEffect } from '@react-navigation/native';
 
 export default function Index() {
-  const { addMarker } = useDatabase();
+  const { addMarker, getMarkers } = useDatabaseContext();
   const [tempCoordinates, setTempCoordinates] = useState<{ latitude: number; longitude: number } | null>(null);
   const [markers, setMarkers] = useState<MarkersData[]>([]);
+
+  const loadMarkers = useCallback(async () => {
+    try {
+      const dbMarkers = await getMarkers();
+      const adaptedMarkers: MarkersData[] = dbMarkers.map(m => ({
+        id: m.id,
+        title: m.title || '',
+        description: m.description || '',
+        latitude: m.latitude,
+        longitude: m.longitude,
+        images: [],
+      }));
+      setMarkers(adaptedMarkers);
+      console.log('Markers reloaded on focus:', adaptedMarkers.length);
+      console.log('Marker IDs:', adaptedMarkers.map(m => m.id));
+    } catch (err) {
+      Alert.alert('Ошибка загрузки маркеров');
+    }
+  }, [getMarkers]);
+
+  useFocusEffect(
+    useCallback(() => {
+      loadMarkers();
+    }, [loadMarkers])
+  );
 
   const onGoToDetails = useCallback((marker: MarkersData) => {
     try {
@@ -55,7 +81,7 @@ export default function Index() {
   }, [tempCoordinates, addMarker]);
 
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView style={styles.container} edges={['bottom']}>
       <View style={styles.container}>
         <Map onGoToDetails={onGoToDetails} onLongPress={handleMapLongPress} markers={markers} setMarkers={setMarkers} />
         <MarkerModal  

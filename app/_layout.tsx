@@ -1,7 +1,9 @@
 import { Stack } from "expo-router";
 import { DatabaseProvider } from '../Context/DatabaseContext';
+import { Alert } from 'react-native';
 
 export default function RootLayout() {
+  try {
   return (
     <DatabaseProvider> 
       <Stack>
@@ -16,4 +18,9 @@ export default function RootLayout() {
       </Stack>
     </DatabaseProvider>
   );
+  } catch (error){
+    Alert.alert('Не удалось загрузить приложение. Перезапустите его.');
+    return null; 
+  }
 }
+

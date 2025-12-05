@@ -1,9 +1,8 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect } from 'react';
 import MapView, { Marker, PROVIDER_GOOGLE } from 'react-native-maps';
 import { StyleSheet, Alert, ActivityIndicator, View, Text } from 'react-native'; 
 import { MarkersData, MapProps } from '../types';
-import { useDatabase } from '../Context/DatabaseContext'; 
-import { useFocusEffect } from '@react-navigation/native';  
+import { useDatabaseContext } from '../Context/DatabaseContext';
 
 interface ExtendedMapProps extends MapProps {
   onLongPress: (coordinates: { latitude: number; longitude: number }) => void;
@@ -12,7 +11,7 @@ interface ExtendedMapProps extends MapProps {
 }
 
 export default function Map({ onGoToDetails, onLongPress, markers, setMarkers }: ExtendedMapProps) { 
-  const { getMarkers, isLoading, error } = useDatabase();
+  const { getMarkers, isLoading, error } = useDatabaseContext();
 
   const loadMarkers = async () => {
     try {
@@ -26,6 +25,8 @@ export default function Map({ onGoToDetails, onLongPress, markers, setMarkers }:
         images: [],
       }));
       setMarkers(adaptedMarkers);
+      console.log('Markers reloaded in Map on focus:', adaptedMarkers.length);
+      console.log('Marker IDs in Map:', adaptedMarkers.map(m => m.id));
     } catch (err) {
       Alert.alert('Ошибка загрузки маркеров');
     }
@@ -34,12 +35,6 @@ export default function Map({ onGoToDetails, onLongPress, markers, setMarkers }:
   useEffect(() => {
     loadMarkers();
   }, [getMarkers, setMarkers]);
-
-  useFocusEffect(
-    React.useCallback(() => {
-      loadMarkers();
-    }, [])
-  );
 
   useEffect(() => {
     if (error) {
@@ -89,18 +84,22 @@ export default function Map({ onGoToDetails, onLongPress, markers, setMarkers }:
           latitudeDelta: 0.055,
           longitudeDelta: 0.055
         }}
-        onLongPress={handleMapLongPress} 
+        onLongPress={handleMapLongPress}
+        key={markers.length}
       >
-        {markers.map((marker) => (
-          <Marker
-            key={marker.id} 
-            coordinate={{ latitude: marker.latitude, longitude: marker.longitude }}
-            title={marker.title}
-            description={marker.description}
-            pinColor="#788cceff" 
-            onPress={() => onGoToDetails(marker)} 
-          />
-        ))}
+        {markers.map((marker) => {
+          console.log('Rendering marker:', marker.id, marker.title);
+          return (
+            <Marker
+              key={`${marker.id}-${Date.now()}`}
+              coordinate={{ latitude: marker.latitude, longitude: marker.longitude }}
+              title={marker.title}
+              description={marker.description}
+              pinColor="#788cceff"
+              onPress={() => onGoToDetails(marker)}
+            />
+          );
+        })}
       </MapView>
     </View>
   );
@@ -111,8 +110,7 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   map: {
-    width: '100%',
-    height: '100%',
+    flex: 1,
   },
   loadingContainer: {
     flex: 1,

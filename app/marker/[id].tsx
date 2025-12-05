@@ -3,17 +3,15 @@ import React, { useEffect, useState } from 'react';
 import { ScrollView, StyleSheet, Text, TouchableOpacity, View, Alert } from 'react-native';
 import ImageList from '../../components/ImageList';
 import MarkerList from '../../components/MarkerList';
-import { useDatabase } from '../../Context/DatabaseContext';
-import { MarkersData } from '../../types';
+import { useDatabaseContext } from "../../Context/DatabaseContext";
+import { MarkersData } from "../../types";
 
 export default function MarkerDetails() {
   const { id } = useLocalSearchParams();
-  if (!id || Array.isArray(id)) {
-    return <View><Text>Неверный ID маркера</Text></View>;
-  }
-
-  const { getMarkers, deleteMarker } = useDatabase();
+  const { getMarkers, deleteMarker, updateMarker } = useDatabaseContext(); 
   const [marker, setMarker] = useState<MarkersData | null>(null);
+  const [title, setTitle] = useState(''); 
+  const [description, setDescription] = useState('');
 
   useEffect(() => {
     const loadMarker = async () => {
@@ -27,8 +25,10 @@ export default function MarkerDetails() {
             description: foundMarker.description || '',
             latitude: foundMarker.latitude,
             longitude: foundMarker.longitude,
-            images: [], 
+            images: [],
           });
+          setTitle(foundMarker.title || '');
+          setDescription(foundMarker.description || '');
         }
       } catch (err) {
         Alert.alert('Ошибка загрузки маркера');
@@ -37,29 +37,38 @@ export default function MarkerDetails() {
     loadMarker();
   }, [id, getMarkers]);
 
-  const handleDelete = async () => {
+  const handleSave = async () => {
     if (!marker) return;
-    Alert.alert(
-      'Удалить маркер?',
-      'Это действие нельзя отменить.',
-      [
-        { text: 'Отмена', style: 'cancel' },
-        {
-          text: 'Удалить',
-          style: 'destructive',
-          onPress: async () => {
-            try {
-              await deleteMarker(marker.id);
-              Alert.alert('Маркер удален');
-              router.back();  // Возврат на карту
-            } catch (err) {
-              Alert.alert('Ошибка удаления');
-            }
-          },
-        },
-      ]
-    );
+    try {
+      await updateMarker(marker.id, title, description);
+      Alert.alert('Сохранено');
+      router.back();
+    } catch (err) {
+      Alert.alert('Ошибка сохранения');
+    }
   };
+
+  const handleDelete = async () => {
+  if (!marker) return;
+  Alert.alert(
+    'Удалить маркер?',
+    '', 
+    [
+      { text: 'Отмена', style: 'cancel' },
+      { text: 'Удалить', style: 'destructive',
+        onPress: async () => {
+          try {
+            await deleteMarker(marker.id);
+            Alert.alert('Маркер удален');
+            router.back();
+          } catch (err) {
+            Alert.alert('Ошибка удаления');
+          }
+        },
+      },
+    ]
+  );
+};
 
   if (!marker) {
     return (
@@ -75,9 +84,12 @@ export default function MarkerDetails() {
   return (
     <View style={styles.container}>
       <ScrollView style={styles.scrollContainer}>
-        <MarkerList marker={marker} />
+        <MarkerList marker={marker} title={title} setTitle={setTitle} description={description} setDescription={setDescription} />
         <ImageList markerId={marker.id} />
       </ScrollView>
+      <TouchableOpacity onPress={handleSave} style={styles.saveButton}>
+        <Text style={styles.saveText}>Сохранить</Text>
+      </TouchableOpacity>
       <TouchableOpacity onPress={handleDelete} style={styles.deleteButton}>
         <Text style={styles.deleteText}>Удалить маркер</Text>
       </TouchableOpacity>
@@ -92,6 +104,18 @@ const styles = StyleSheet.create({
   scrollContainer: {
     flex: 1,
     padding: 20,
+  },
+  saveButton: { 
+    backgroundColor: '#788cceff',
+    padding: 15,
+    alignItems: 'center',
+    marginHorizontal: 20,
+    marginBottom: 10,
+    borderRadius: 5,
+  },
+  saveText: {
+    color: '#fff',
+    fontSize: 16,
   },
   deleteButton: {
     backgroundColor: '#f87f76ff',
