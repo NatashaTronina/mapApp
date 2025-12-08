@@ -4,93 +4,97 @@ import { ScrollView, StyleSheet, Text, TouchableOpacity, View, Alert } from 'rea
 import ImageList from '../../components/ImageList';
 import MarkerList from '../../components/MarkerList';
 import { useDatabaseContext } from "../../Context/DatabaseContext";
+import { useMarkersContext } from "../../Context/MarkersContext";
 import { MarkersData } from "../../types";
 
 export default function MarkerDetails() {
   const { id } = useLocalSearchParams();
-  const { getMarkers, deleteMarker, updateMarker } = useDatabaseContext(); 
+  const { getMarkers, deleteMarker, updateMarker } = useDatabaseContext();
+  const { updateMarkerInState, deleteMarkerFromState } = useMarkersContext();
+
   const [marker, setMarker] = useState<MarkersData | null>(null);
-  const [title, setTitle] = useState(''); 
+  const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
 
   useEffect(() => {
-    const loadMarker = async () => {
-      try {
-        const markers = await getMarkers();
-        const foundMarker = markers.find(m => m.id === id as string);
-        if (foundMarker) {
-          setMarker({
-            id: foundMarker.id,
-            title: foundMarker.title || '',
-            description: foundMarker.description || '',
-            latitude: foundMarker.latitude,
-            longitude: foundMarker.longitude,
-            images: [],
-          });
-          setTitle(foundMarker.title || '');
-          setDescription(foundMarker.description || '');
-        }
-      } catch (err) {
-        Alert.alert('Ошибка загрузки маркера');
-      }
+    const load = async () => {
+      const markers = await getMarkers();
+      const found = markers.find(m => m.id === id);
+
+      if (!found) return;
+
+      setMarker({
+        id: found.id,
+        title: found.title || '',
+        description: found.description || '',
+        latitude: found.latitude,
+        longitude: found.longitude,
+        images: [],
+      });
+
+      setTitle(found.title || '');
+      setDescription(found.description || '');
     };
-    loadMarker();
-  }, [id, getMarkers]);
+
+    load();
+  }, [id]);
 
   const handleSave = async () => {
     if (!marker) return;
-    try {
-      await updateMarker(marker.id, title, description);
-      Alert.alert('Сохранено');
-      router.back();
-    } catch (err) {
-      Alert.alert('Ошибка сохранения');
-    }
+
+    await updateMarker(marker.id, title, description);
+    updateMarkerInState(marker.id, title, description);
+
+    Alert.alert("Сохранено");
+    router.back();
   };
 
-  const handleDelete = async () => {
-  if (!marker) return;
-  Alert.alert(
-    'Удалить маркер?',
-    '', 
-    [
-      { text: 'Отмена', style: 'cancel' },
-      { text: 'Удалить', style: 'destructive',
-        onPress: async () => {
-          try {
+  const handleDelete = () => {
+    if (!marker) return;
+
+    Alert.alert(
+      "Удалить?",
+      "",
+      [
+        { text: "Отмена", style: "cancel" },
+        { text: "Удалить", style: "destructive",
+          onPress: async () => {
             await deleteMarker(marker.id);
-            Alert.alert('Маркер удален');
+            deleteMarkerFromState(marker.id);
             router.back();
-          } catch (err) {
-            Alert.alert('Ошибка удаления');
           }
-        },
-      },
-    ]
-  );
-};
+        }
+      ]
+    );
+  };
 
   if (!marker) {
     return (
       <View style={styles.container}>
         <Text>Маркер не найден</Text>
-        <TouchableOpacity onPress={() => router.back()} style={styles.button}>
-          <Text style={styles.buttonText}>Вернуться назад</Text>
-        </TouchableOpacity>
       </View>
     );
   }
 
   return (
     <View style={styles.container}>
-      <ScrollView style={styles.scrollContainer}>
-        <MarkerList marker={marker} title={title} setTitle={setTitle} description={description} setDescription={setDescription} />
+      <ScrollView style={styles.scroll}>
+        <MarkerList
+          marker={marker}
+          title={title}
+          setTitle={setTitle}
+          description={description}
+          setDescription={setDescription}
+        />
+
         <ImageList markerId={marker.id} />
       </ScrollView>
-      <TouchableOpacity onPress={handleSave} style={styles.saveButton}>
+
+      <TouchableOpacity style={styles.save} onPress={handleSave}>
         <Text style={styles.saveText}>Сохранить</Text>
       </TouchableOpacity>
-      <TouchableOpacity onPress={handleDelete} style={styles.deleteButton}>
+
+      <TouchableOpacity style={styles.delete} onPress={handleDelete}>
         <Text style={styles.deleteText}>Удалить маркер</Text>
       </TouchableOpacity>
     </View>
@@ -98,45 +102,21 @@ export default function MarkerDetails() {
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-  },
-  scrollContainer: {
-    flex: 1,
-    padding: 20,
-  },
-  saveButton: { 
+  container: { flex: 1 },
+  scroll: { padding: 20 },
+  save: {
     backgroundColor: '#788cceff',
     padding: 15,
-    alignItems: 'center',
     marginHorizontal: 20,
     marginBottom: 10,
     borderRadius: 5,
   },
-  saveText: {
-    color: '#fff',
-    fontSize: 16,
-  },
-  deleteButton: {
+  saveText: { color: '#fff', textAlign: 'center' },
+  delete: {
     backgroundColor: '#f87f76ff',
     padding: 15,
-    alignItems: 'center',
     margin: 20,
     borderRadius: 5,
   },
-  deleteText: {
-    color: '#fff',
-    fontSize: 16,
-  },
-  button: {
-    backgroundColor: '#788cceff',
-    padding: 10,
-    borderRadius: 5,
-    alignItems: 'center',
-    marginBottom: 15,
-  },
-  buttonText: {
-    color: '#fff',
-    fontSize: 16,
-  },
+  deleteText: { color: '#fff', textAlign: 'center' },
 });

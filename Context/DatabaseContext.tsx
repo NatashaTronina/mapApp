@@ -72,7 +72,6 @@ export const DatabaseProvider: React.FC<{ children: React.ReactNode }> = ({ chil
       throw new Error('База данных не инициализирована');
     }
     await deleteMarkerOperation(db, id);
-    console.log('Маркер удален из базы:', id);
   };
 
   const getMarkers = async (): Promise<Marker[]> => {
@@ -80,7 +79,6 @@ export const DatabaseProvider: React.FC<{ children: React.ReactNode }> = ({ chil
       throw new Error('База данных не инициализирована');
     };
     const markers = await getMarkersOperation(db);
-    console.log('Маркеры загружены из базы:', markers.length);
     return markers;
   };
 
@@ -89,7 +87,6 @@ export const DatabaseProvider: React.FC<{ children: React.ReactNode }> = ({ chil
       throw new Error('База данных не инициализирована');
     }
     await updateMarkerOperation(db, id, title, description);
-    console.log('Маркер обновлен в базе:', id);
   };
 
   const addImage = async (markerId: string, uri: string): Promise<string> => {
@@ -97,7 +94,6 @@ export const DatabaseProvider: React.FC<{ children: React.ReactNode }> = ({ chil
       throw new Error('База данных не инициализирована');
     }
     const id = await addImageOperation(db, markerId, uri);
-    console.log('Изображение добавлено в базу:', id);
     return id;
   };
 
