@@ -14,6 +14,7 @@ interface MarkerListProps {
 export default function MarkerList({ marker, title, setTitle, description, setDescription }: MarkerListProps) {
   const { isLoading, error } = useDatabaseContext();
 
+  // показываем ошибку
   useEffect(() => {
     if (error) {
       Alert.alert('Ошибка', error.message);

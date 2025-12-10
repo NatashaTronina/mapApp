@@ -8,6 +8,7 @@ export default function ImageList({ markerId }: { markerId: string }) {
   const { addImage, deleteImage, getMarkerImages, isLoading, error } = useDatabaseContext();
   const [images, setImages] = useState<ImageData[]>([]);
 
+  // грузим картинки из бд
   useEffect(() => {
     const loadImages = async () => {
       try {
@@ -24,12 +25,14 @@ export default function ImageList({ markerId }: { markerId: string }) {
     loadImages();
   }, [markerId, getMarkerImages]);
 
+  // показываем ошибку
   useEffect(() => {
     if (error) {
       Alert.alert('Ошибка', error.message);
     }
   }, [error]);
 
+  // добавляем картинку
   const pickImage = async () => {
     try {
       let result = await ImagePicker.launchImageLibraryAsync({
@@ -49,6 +52,7 @@ export default function ImageList({ markerId }: { markerId: string }) {
     }
   };
 
+  // удаляем картинку
   const removeImage = async (imageId: string) => {
     try {
       await deleteImage(imageId);
@@ -59,7 +63,7 @@ export default function ImageList({ markerId }: { markerId: string }) {
   };
 
   if (isLoading) {
-    return <ActivityIndicator size="large" />;
+    return <ActivityIndicator size="large" color='#788cceff'/>;
   }
 
   return (

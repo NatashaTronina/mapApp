@@ -1,16 +1,18 @@
-import React, { createContext, useContext, useEffect, useState } from 'react';
 import * as SQLite from 'expo-sqlite';
-import { Marker, MarkerImage } from '../types';
+import React, { createContext, useContext, useEffect, useState } from 'react';
 import { initDatabase } from '../database/schema';
+import { Marker, MarkerImage } from '../types';
+
 import {
+  addImage as addImageOperation,
   addMarker as addMarkerOperation,
+  deleteImage as deleteImageOperation,
   deleteMarker as deleteMarkerOperation,
+  getMarkerImages as getMarkerImagesOperation,
   getMarkers as getMarkersOperation,
   updateMarker as updateMarkerOperation,
-  addImage as addImageOperation,
-  deleteImage as deleteImageOperation,
-  getMarkerImages as getMarkerImagesOperation,
 } from '../database/operations';
+
 import { Text } from 'react-native';
 
 interface DatabaseContextType {
@@ -39,7 +41,8 @@ export const DatabaseProvider: React.FC<{ children: React.ReactNode }> = ({ chil
   const [db, setDb] = useState<SQLite.SQLiteDatabase | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
-
+  
+  // Инициализация бд
   useEffect(() => {
     const initialize = async () => {
       try {
@@ -51,73 +54,66 @@ export const DatabaseProvider: React.FC<{ children: React.ReactNode }> = ({ chil
         setIsLoading(false);
       }
     };
+
     initialize();
   }, []);
 
-  const addMarker = async (latitude: number, longitude: number, title?: string, description?: string): Promise<string> => {
+  const addMarker = async (latitude: number, longitude: number, title?: string, description?: string) => {
+  if (!db) {
+    throw new Error('База данных не инициализирована');
+  }
+  return addMarkerOperation(db, latitude, longitude, title, description);
+  };
+
+  const deleteMarker = async (id: string) => {
     if (!db) {
       throw new Error('База данных не инициализирована');
     }
-    try {
-      const id = await addMarkerOperation(db, latitude, longitude, title, description);
-      return id;
-    } catch (err) {
-      console.error('Error in addMarker:', err); 
-      throw err;  
-    }
+    return deleteMarkerOperation(db, id);
   };
 
-  const deleteMarker = async (id: string): Promise<void> => {
+  const getMarkers = async () => {
     if (!db) {
       throw new Error('База данных не инициализирована');
     }
-    await deleteMarkerOperation(db, id);
+    return getMarkersOperation(db);
   };
 
-  const getMarkers = async (): Promise<Marker[]> => {
-    if (!db) {
-      throw new Error('База данных не инициализирована');
-    };
-    const markers = await getMarkersOperation(db);
-    return markers;
-  };
-
-  const updateMarker = async (id: string, title?: string, description?: string): Promise<void> => {
+  const updateMarker = async (id: string, title?: string, description?: string) => {
     if (!db) {
       throw new Error('База данных не инициализирована');
     }
-    await updateMarkerOperation(db, id, title, description);
+    return updateMarkerOperation(db, id, title, description);
   };
 
-  const addImage = async (markerId: string, uri: string): Promise<string> => {
+  const addImage = async (markerId: string, uri: string) => {
     if (!db) {
       throw new Error('База данных не инициализирована');
     }
-    const id = await addImageOperation(db, markerId, uri);
-    return id;
+    return addImageOperation(db, markerId, uri);
   };
 
-  const deleteImage = async (id: string): Promise<void> => {
-    if (!db) { 
-      throw new Error('База данных не инициализирована');
-    }
-    await deleteImageOperation(db, id);
-  };
-
-  const getMarkerImages = async (markerId: string): Promise<MarkerImage[]> => {
+  const deleteImage = async (id: string) => {
     if (!db) {
       throw new Error('База данных не инициализирована');
     }
-    const images: MarkerImage[] = await getMarkerImagesOperation(db, markerId);
-    return images;
+    return deleteImageOperation(db, id);
   };
 
-  const value: DatabaseContextType = { addMarker, deleteMarker, getMarkers, updateMarker, addImage, deleteImage, getMarkerImages, isLoading, error };
+  const getMarkerImages = async (markerId: string) => {
+    if (!db) {
+      throw new Error('База данных не инициализирована');
+    }
+    return getMarkerImagesOperation(db, markerId);
+  };
+
+  const value = {
+    addMarker, deleteMarker, getMarkers, updateMarker, addImage, deleteImage, getMarkerImages, isLoading, error
+  };
 
   if (isLoading) {
     return <Text>Загрузка базы данных</Text>;
   }
-
   if (error) {
     return <Text>Ошибка базы данных: {error.message}</Text>;
   }

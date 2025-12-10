@@ -53,8 +53,7 @@ export default function MarkerDetails() {
     if (!marker) return;
 
     Alert.alert(
-      "Удалить?",
-      "",
+      "Удалить?", "",
       [
         { text: "Отмена", style: "cancel" },
         { text: "Удалить", style: "destructive",

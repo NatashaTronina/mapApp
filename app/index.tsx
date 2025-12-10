@@ -3,24 +3,20 @@ import { Alert, StyleSheet } from 'react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import Map from '../components/Map';
 import MarkerModal from '../components/MarkerModal';
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import { useDatabaseContext } from '../Context/DatabaseContext';
 import { useMarkersContext } from '../Context/MarkersContext';
-import { useFocusEffect } from '@react-navigation/native';
 
 export default function Index() {
   const { addMarker, getMarkers } = useDatabaseContext();
   const { markers, setMarkers, addMarkerToState } = useMarkersContext();
-  const [tempCoordinates, setTempCoordinates] = useState<{
-  latitude: number;
-  longitude: number;
-} | null>(null);
+  const [tempCoordinates, setTempCoordinates] = useState<{latitude: number; longitude: number;} | null>(null);
 
-
+  // загрузка маркеры из бд
   const loadMarkers = useCallback(async () => {
     try {
       const dbMarkers = await getMarkers();
-      const adapted = dbMarkers.map(m => ({
+      const changed = dbMarkers.map(m => ({
         id: m.id,
         title: m.title || '',
         description: m.description || '',
@@ -28,18 +24,17 @@ export default function Index() {
         longitude: m.longitude,
         images: [],
       }));
-      setMarkers(adapted);
+      setMarkers(changed);
     } catch {
       Alert.alert("Ошибка загрузки");
     }
   }, []);
 
-  useFocusEffect(
-    useCallback(() => {
-      loadMarkers();
-    }, [loadMarkers])
-  );
+  useEffect(() => {
+    loadMarkers();
+  }, []);
 
+  // добавляпем маркер в базу
   const handleAddMarker = async (title: string, description: string) => {
     if (!tempCoordinates) return;
 

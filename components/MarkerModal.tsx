@@ -11,12 +11,14 @@ export default function MarkerModal({ visible, onClose, onAddMarker }: MarkerMod
   const [newTitle, setNewTitle] = useState('');
   const [newDescription, setNewDescription] = useState('');
 
+  // обработчик для добавления маркера и отчистики полей
   const handleAddMarker = useCallback(() => {
     onAddMarker(newTitle, newDescription);
     setNewTitle('');
     setNewDescription('');
   }, [newTitle, newDescription, onAddMarker]);
 
+  // обработчик для закрытия модалки и отчистки полей
   const handleClose = useCallback(() => {
     onClose();
     setNewTitle('');

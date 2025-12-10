@@ -14,10 +14,12 @@ const MarkersContext = createContext<MarkersContextType | undefined>(undefined);
 export const MarkersProvider = ({ children }: { children: React.ReactNode }) => {
   const [markers, setMarkers] = useState<MarkersData[]>([]);
 
+  // Добавляем новый маркер в состояние
   const addMarkerToState = useCallback((marker: MarkersData) => {
     setMarkers((prev) => [...prev, marker]);
   }, []);
 
+  // Меняем название и описание  у  маркер
   const updateMarkerInState = useCallback((id: string, title: string, description: string) => {
     setMarkers((prev) =>
       prev.map((m) =>
@@ -26,6 +28,7 @@ export const MarkersProvider = ({ children }: { children: React.ReactNode }) => 
     );
   }, []);
 
+  // УДаляем маркер
   const deleteMarkerFromState = useCallback((id: string) => {
     setMarkers((prev) => prev.filter((m) => m.id !== id));
   }, []);
@@ -46,7 +49,9 @@ export const MarkersProvider = ({ children }: { children: React.ReactNode }) => 
 };
 
 export const useMarkersContext = () => {
-  const ctx = useContext(MarkersContext);
-  if (!ctx) throw new Error('useMarkersContext must be used inside MarkersProvider');
-  return ctx;
+  const context = useContext(MarkersContext);
+  if (!context) {
+    throw new Error('useMarkersContext must be used inside MarkersProvider');
+  }
+  return context;
 };
