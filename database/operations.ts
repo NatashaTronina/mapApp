@@ -1,9 +1,9 @@
-import 'react-native-get-random-values';
 import * as SQLite from 'expo-sqlite';
 import { v4 as uuidv4 } from 'uuid';
 import { Marker, MarkerImage } from "../types";
 
-// Добавляем маркер
+
+// Добавление маркера
 export const addMarker = async (
   db: SQLite.SQLiteDatabase,
   latitude: number,
@@ -13,47 +13,72 @@ export const addMarker = async (
 ): Promise<string> => {
 
   const id = uuidv4();
+  console.log("Добавление маркера... ", { id, latitude, longitude, title, description });
 
-  await db.runAsync(
-    `INSERT INTO markers (id, latitude, longitude, title, description) 
-     VALUES (?, ?, ?, ?, ?)`,
-    [id, latitude, longitude, title || '', description || '']
-  );
+  try {
+    await db.runAsync(
+      `INSERT INTO markers (id, latitude, longitude, title, description) 
+       VALUES (?, ?, ?, ?, ?)`,
+      [id, latitude, longitude, title || '', description || '']
+    );
 
-  return id;
+    console.log("Маркер добавлен успешно:", id);
+    return id;
+
+  } catch (error) {
+    console.error("Не удалось добавить маркер:", error);
+    throw error;
+  }
 };
 
-// Удаляем маркерп с транзацкией чтобы удалились и фотографии
+
+// Удаление маркера вместе с фотографиями
 export const deleteMarker = async (
   db: SQLite.SQLiteDatabase,
   id: string
 ): Promise<void> => {
 
-  await db.withTransactionAsync(async () => {
-    await db.runAsync(
-      `DELETE FROM marker_images WHERE marker_id = ?`,
-      [id]
-    );
+  console.log("Удаление маркера:", id);
 
-    await db.runAsync(
-      `DELETE FROM markers WHERE id = ?`,
-      [id]
-    );
-  });
+  try {
+    await db.withTransactionAsync(async () => {
+      await db.runAsync(`DELETE FROM marker_images WHERE marker_id = ?`, [id]);
+
+      await db.runAsync(`DELETE FROM markers WHERE id = ?`, [id]);
+    });
+
+    console.log("Маркер и привязанные изображения удалены!");
+
+  } catch (error) {
+    console.error("Ошибка при удалении маркера:", error);
+    throw error;
+  }
 };
 
-// Получаем маркер
+// Получение всех маркеров
 export const getMarkers = async (
   db: SQLite.SQLiteDatabase
 ): Promise<Marker[]> => {
 
-  return await db.getAllAsync<Marker>(
-    `SELECT id, latitude, longitude, title, description, created_at 
-     FROM markers ORDER BY created_at DESC`
-  );
+  console.log("Получение всех маркеров...");
+
+  try {
+    const rows = await db.getAllAsync<Marker>(
+      `SELECT id, latitude, longitude, title, description, created_at 
+       FROM markers ORDER BY created_at DESC`
+    );
+
+    console.log(`Маркеры загружены: ${rows.length} шт.`);
+    return rows;
+
+  } catch (error) {
+    console.error("Не удалось п олучить маркре:", error);
+    throw error;
+  }
 };
 
-// Меняем маркер
+
+// Обновление маркера
 export const updateMarker = async (
   db: SQLite.SQLiteDatabase,
   id: string,
@@ -61,16 +86,23 @@ export const updateMarker = async (
   description?: string
 ) => {
 
-  await db.withTransactionAsync(async () => {
+  console.log("Обновление маркера... ", { id, title, description });
+
+  try {
     await db.runAsync(
       `UPDATE markers SET title = ?, description = ? WHERE id = ?`,
       [title || '', description || '', id]
     );
-  });
+
+    console.log("Маркер обновлён:", id);
+
+  } catch (error) {
+    console.error("Не удалось обновить маркер:", error);
+    throw error;
+  }
 };
 
-
-// Добавляем изображение
+// Добавление изображения
 export const addImage = async (
   db: SQLite.SQLiteDatabase,
   markerId: string,
@@ -78,38 +110,71 @@ export const addImage = async (
 ): Promise<string> => {
 
   const id = uuidv4();
+  console.log("Добавление изображения... ", { id, markerId, uri });
 
-  await db.runAsync(
-    `INSERT INTO marker_images (id, marker_id, uri) VALUES (?, ?, ?)`,
-    [id, markerId, uri]
-  );
+  try {
+    await db.runAsync(
+      `INSERT INTO marker_images (id, marker_id, uri) VALUES (?, ?, ?)`,
+      [id, markerId, uri]
+    );
 
-  return id;
+    console.log("Изображение добавлено:", id);
+    return id;
+
+  } catch (error) {
+    console.error("Не удалось добавить изображение:", error);
+    throw error;
+  }
 };
 
-// Удаляем изображения
+
+
+// Удаление изображения
 export const deleteImage = async (
   db: SQLite.SQLiteDatabase,
   id: string
 ): Promise<void> => {
 
-  await db.runAsync(
-    `DELETE FROM marker_images WHERE id = ?`,
-    [id]
-  );
+  console.log("Удаляем изображение... ", id);
+
+  try {
+    await db.runAsync(
+      `DELETE FROM marker_images WHERE id = ?`,
+      [id]
+    );
+
+    console.log("Изображение удалено:", id);
+
+  } catch (error) {
+    console.error("Не удалось удалить изображение:", error);
+    throw error;
+  }
 };
 
-// Получаем изображения маркера по его айди
+
+
+// Получение всех изображений конкретного маркера
 export const getMarkerImages = async (
   db: SQLite.SQLiteDatabase,
   markerId: string
 ): Promise<MarkerImage[]> => {
 
-  return await db.getAllAsync<MarkerImage>(
-    `SELECT id, marker_id, uri, created_at 
-     FROM marker_images 
-     WHERE marker_id = ? 
-     ORDER BY created_at DESC`,
-    [markerId]
-  );
+  console.log("Получаем изображений для маркера:", markerId);
+
+  try {
+    const rows = await db.getAllAsync<MarkerImage>(
+      `SELECT id, marker_id, uri, created_at 
+       FROM marker_images 
+       WHERE marker_id = ? 
+       ORDER BY created_at DESC`,
+      [markerId]
+    );
+
+    console.log(`Изображений загружено: ${rows.length}`);
+    return rows;
+
+  } catch (error) {
+    console.error("Не удалось получить изображение:", error);
+    throw error;
+  }
 };
